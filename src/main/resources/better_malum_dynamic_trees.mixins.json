@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.bettercontent.bettermalumdynamictrees.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "better_malum_dynamic_trees.refmap.json",
+  "mixins": ["DynamicTreeFeatureMixin", "WeepingWellStructureMixin"],
+  "injectors": {"defaultRequire": 1}
+}

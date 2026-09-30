@@ -6,14 +6,14 @@ plugins {
 }
 
 mixin {
-    add sourceSets.main, 'dynamic_trees_malum.refmap.json'
-    config 'dynamic_trees_malum.mixins.json'
+    add sourceSets.main, 'better_malum_dynamic_trees.refmap.json'
+    config 'better_malum_dynamic_trees.mixins.json'
 }
 
 version = project.hasProperty('mod_version') ? project.mod_version : '1.0.0'
 group = 'com.bettercontent'
 base {
-    archivesName = 'dynamic-trees-malum'
+    archivesName = 'better-malum-dynamic-trees'
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -27,7 +27,7 @@ minecraft {
         configureEach {
             property 'mixin.env.remapRefMap', 'true'
             property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            property 'forge.enabledGameTestNamespaces', 'dynamic_trees_malum,minecraft'
+            property 'forge.enabledGameTestNamespaces', 'better_malum_dynamic_trees,minecraft'
         }
 
         client {
@@ -35,7 +35,7 @@ minecraft {
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             mods {
-                dynamic_trees_malum {
+                better_malum_dynamic_trees {
                     source sourceSets.main
                 }
             }
@@ -46,7 +46,7 @@ minecraft {
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             mods {
-                dynamic_trees_malum {
+                better_malum_dynamic_trees {
                     source sourceSets.main
                 }
             }
@@ -57,7 +57,7 @@ minecraft {
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             mods {
-                dynamic_trees_malum {
+                better_malum_dynamic_trees {
                     source sourceSets.main
                 }
             }
@@ -65,14 +65,14 @@ minecraft {
 
         data {
             workingDirectory project.file('run')
-            args '--mod', 'dynamic_trees_malum',
+            args '--mod', 'better_malum_dynamic_trees',
                  '--all',
                  '--output', file('src/generated/resources/'),
                  '--existing', file('src/main/resources/'),
                  '--existing-mod', 'dynamictrees',
                  '--existing-mod', 'malum'
             mods {
-                dynamic_trees_malum {
+                better_malum_dynamic_trees {
                     source sourceSets.main
                 }
             }
@@ -128,15 +128,15 @@ dependencies {
 }
 
 tasks.named('jar') {
-    exclude 'com/bettercontent/dynamictreesmalum/gametest/**'
+    exclude 'com/bettercontent/bettermalumdynamictrees/gametest/**'
     manifest {
         attributes([
-                'Specification-Title'     : 'dynamic_trees_malum',
-                'Specification-Vendor'    : 'dynamic_trees_malum',
+                'Specification-Title'     : 'better_malum_dynamic_trees',
+                'Specification-Vendor'    : 'better_malum_dynamic_trees',
                 'Specification-Version'   : '1',
                 'Implementation-Title'    : project.name,
                 'Implementation-Version'  : project.version,
-                'Implementation-Vendor'   : 'dynamic_trees_malum'
+                'Implementation-Vendor'   : 'better_malum_dynamic_trees'
         ])
     }
 }

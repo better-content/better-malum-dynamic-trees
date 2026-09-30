@@ -1,4 +1,4 @@
-# Dynamic Trees for Malum (`dynamic_trees_malum`)
+# Dynamic Trees for Malum (`better_malum_dynamic_trees`)
 
 Forge 1.20.1 addon that provides Dynamic Trees integration for Malum Runewood trees.
 
@@ -54,7 +54,7 @@ Note: Malum `1.6.7` does not provide `azure_runewood_log`; Azure Runewood worldg
 
 ## Worldgen replacement strategy
 
-`dynamic_trees_malum` wraps the DT species selector plus scoped feature cancellers:
+`better_malum_dynamic_trees` wraps the DT species selector plus scoped feature cancellers:
 
 - At eligible Malum biome tags, a seed-coordinate selector chooses the dynamic species only when the district policy admits it; every other site delegates to the unmodified Dynamic Trees selector:
   - `#malum:has_runewood`
@@ -85,4 +85,4 @@ For modpack and mod discussion, playtest feedback, and bug reports, join the [Be
 
 ## Identity
 
-The clean-break canonical identity is repository/artifact `dynamic-trees-malum`, mod ID and resource namespace `dynamic_trees_malum`, and Maven group `com.bettercontent`. Legacy `dtmalum` worlds and configs are not migrated.
+The clean-break canonical identity is repository/artifact `better-malum-dynamic-trees`, mod ID and resource namespace `better_malum_dynamic_trees`, and Maven group `com.bettercontent`. Legacy `dtmalum` worlds and configs are not migrated.

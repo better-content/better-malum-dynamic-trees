@@ -1,0 +1,6 @@
+{
+  "parent": "dynamictrees:item/standard_seed",
+  "textures": {
+    "layer0": "better_malum_dynamic_trees:item/runewood_seed"
+  }
+}
