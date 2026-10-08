@@ -36,6 +36,31 @@ class BlightLocusBootstrapSourceTest {
     }
 
     @Test
+    void forgeLoadOnlyQueuesMetadataAndNativeEndTickOwnsReadyAdmission() throws Exception {
+        String bootstrap = Files.readString(Path.of("src/main/java/com/bettercontent/bettermalumdynamictrees/BlightLocusBootstrap.java"));
+        String load = methodBody(bootstrap, "public static void onChunkLoad(");
+        assertTrue(load.contains("BlightLocusPolicy.siteForChunk(level.getSeed()"));
+        assertTrue(load.contains("PENDING.enqueue(level, site.get())"));
+        for (String forbidden : new String[]{"findEligibleBase(", "BlightLocusData.get(", ".claim(",
+                "getHeight(", "getBlockState(", "getChunkNow(", "new ActiveBlightEvent", "addWorldEvent("}) {
+            assertFalse(load.contains(forbidden), "pre-FULL Load callback must not interact with the level: " + forbidden);
+        }
+        String tick = methodBody(bootstrap, "public static void onLevelTick(");
+        assertTrue(tick.contains("TickEvent.Phase.END"));
+        assertTrue(tick.contains("event.level instanceof ServerLevel level"));
+        assertTrue(tick.contains("level.getServer().isSameThread()"));
+        assertTrue(tick.contains("PENDING.drain(level"));
+        assertTrue(tick.contains("getChunkNow(candidate.chunkX(), candidate.chunkZ())"));
+        assertTrue(tick.contains("admit(level, chunk, candidate.site())"));
+        assertTrue(methodBody(bootstrap, "public static void onChunkUnload(").contains("PENDING.unloadChunk("));
+        assertTrue(methodBody(bootstrap, "public static void onLevelUnload(").contains("PENDING.unloadLevel(level)"));
+        for (String forbidden : new String[]{".execute(", ".join(", "managedBlock(", "addRegionTicket(",
+                "setChunkForced(", "level.getChunk(", "catch (", "level.setBlock("}) {
+            assertFalse(bootstrap.contains(forbidden), "admission must not force/await/repair native work: " + forbidden);
+        }
+    }
+
+    @Test
     void pinnedMalumEventDelegatesSoulwoodGrowthToItsNativeBlightGenerator() throws IOException {
         String event = pinnedClassBytes("com/sammy/malum/common/worldevent/ActiveBlightEvent.class");
         String feature = pinnedClassBytes("com/sammy/malum/common/worldgen/tree/SoulwoodTreeFeature.class");
@@ -44,6 +69,19 @@ class BlightLocusBootstrapSourceTest {
         assertTrue(event.contains("generateBlight"));
         assertTrue(feature.contains("SOULWOOD_GROWTH"));
         assertTrue(feature.contains("BLIGHT"));
+    }
+
+    private static String methodBody(String source, String signature) {
+        int start = source.indexOf(signature);
+        assertTrue(start >= 0, "missing Forge handler: " + signature);
+        int open = source.indexOf('{', start), depth = 1, end = open + 1;
+        while (end < source.length() && depth > 0) {
+            char value = source.charAt(end++);
+            if (value == '{') depth++;
+            else if (value == '}') depth--;
+        }
+        assertTrue(depth == 0, "unterminated handler: " + signature);
+        return source.substring(open + 1, end - 1);
     }
 
     private static String pinnedClassBytes(String resource) throws IOException {
