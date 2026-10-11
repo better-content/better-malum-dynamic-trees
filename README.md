@@ -1,5 +1,11 @@
 # Dynamic Trees for Malum (`better_malum_dynamic_trees`)
 
+## Scope and authority
+
+This repository owns its mod-specific behavior and authoring inputs. Read [local instructions](AGENTS.md)
+and the [shared documentation/policy index](../../better-content-modpack/docs/README.md).
+
+
 Forge 1.20.1 addon that provides Dynamic Trees integration for Malum Runewood trees.
 
 `OccultDistricts` is a pure seed-and-coordinate provider for later flora and Well consumers. It has no biome, mineral worldgen, mutable region storage, or chunk writes. Its field contains ordinary gaps and continuous fringe, interior, and core bands. The native Dynamic Trees selection route wraps its selector before soil, chance, or block placement: normal Runewood is concentrated in district interiors/cores with sparse fringe clues, and Azure additionally requires a biome base temperature of at most `0.40`.
