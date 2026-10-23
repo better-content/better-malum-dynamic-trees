@@ -10,6 +10,8 @@ Forge 1.20.1 addon that provides Dynamic Trees integration for Malum Runewood tr
 
 `OccultDistricts` is a pure seed-and-coordinate provider for later flora and Well consumers. It has no biome, mineral worldgen, mutable region storage, or chunk writes. Its field contains ordinary gaps and continuous fringe, interior, and core bands. The native Dynamic Trees selection route wraps its selector before soil, chance, or block placement: normal Runewood is concentrated in district interiors/cores with sparse fringe clues, and Azure additionally requires a biome base temperature of at most `0.40`.
 
+See [bounded playtest observations](docs/playtest-observations.md) for queued/claimed/submitted Blight diagnostics.
+
 ## References used (structure + API)
 
 - `DynamicTreesTeam/DynamicTrees-BWG` (branch `1.20.1`) as primary structural reference.
@@ -84,6 +86,11 @@ Tune `MalumDistrictPolicy` only with fixed-seed coverage tests. The underlying D
 - `./gradlew verifyFull`
 
 `verifyFast` runs the unit-test lane. `verifyFull` adds the headless Forge GameTest pass.
+The SOURCE runtime fixture includes the production BOTH-side Patchouli 85 pin
+(`curse.maven:patchouli-306770:7731017`). Dynamic Trees' guide conditional recipe
+requires its actual book serializer; no recipe or registry data is removed. Patchouli
+has no mandatory mod transitives beyond Forge/Minecraft. This fixture completion
+still requires a newly admitted strict full gate with the same two required tests.
 
 ## Community and support
 

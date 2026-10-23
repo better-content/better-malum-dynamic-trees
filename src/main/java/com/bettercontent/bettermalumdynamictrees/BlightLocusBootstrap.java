@@ -32,6 +32,11 @@ public final class BlightLocusBootstrap {
         // Forge Load can run before the FULL future is published. Metadata only here:
         // even a same-chunk level read can wait on the future enclosing this callback.
         PENDING.enqueue(level, site.get());
+        var log = com.bettercontent.bettermalumdynamictrees.diagnostics.RuntimeDiagnostics.LOG;
+        // Load may run off-thread: dimension was already admitted above; never read a world clock here.
+        if (log.enabled("worldgen")) com.bettercontent.bettermalumdynamictrees.diagnostics.FeatureObservation.site(log,
+            () -> com.bettercontent.bettermalumdynamictrees.diagnostics.PlaytestLog.Context.server("minecraft:overworld", -1),
+            "blight.queue", "queued", "rare_native_site", site.get().key());
     }
 
     @SubscribeEvent
@@ -65,10 +70,12 @@ public final class BlightLocusBootstrap {
         BlightLocusData locusData = BlightLocusData.get(level);
         BlockPos source = findEligibleBase(level, chunk);
         if (source == null) {
+            observeSite(level, selected, "deferred", "no_eligible_ground");
             return;
         }
         // Commit the once-only claim only after a valid ground location is found.
         if (!locusData.claim(selected.key())) {
+            observeSite(level, selected, "rejected", "already_claimed");
             return;
         }
 
@@ -76,6 +83,16 @@ public final class BlightLocusBootstrap {
             .setPosition(source)
             .setBlightData(2, 4, 4);
         WorldEventHandler.addWorldEvent(level, blight);
+        var log = com.bettercontent.bettermalumdynamictrees.diagnostics.RuntimeDiagnostics.LOG;
+        if (log.enabled("worldgen")) com.bettercontent.bettermalumdynamictrees.diagnostics.FeatureObservation.submitted(log,
+            () -> com.bettercontent.bettermalumdynamictrees.diagnostics.RuntimeDiagnostics.context(level), selected.key());
+    }
+
+    private static void observeSite(ServerLevel level, BlightLocusPolicy.Site selected, String result, String reason) {
+        var log = com.bettercontent.bettermalumdynamictrees.diagnostics.RuntimeDiagnostics.LOG;
+        if (log.enabled("worldgen")) com.bettercontent.bettermalumdynamictrees.diagnostics.FeatureObservation.site(log,
+            () -> com.bettercontent.bettermalumdynamictrees.diagnostics.RuntimeDiagnostics.context(level),
+            "blight.admit", result, reason, selected.key());
     }
 
     private static BlockPos findEligibleBase(ServerLevel level, net.minecraft.world.level.chunk.ChunkAccess chunk) {

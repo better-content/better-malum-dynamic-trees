@@ -19,6 +19,7 @@ public class Dtmalum {
     public static final String MODID = "better_malum_dynamic_trees";
 
     public Dtmalum() {
+        com.bettercontent.bettermalumdynamictrees.diagnostics.RuntimeDiagnostics.initialize();
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
         eventBus.addListener(this::gatherData);
         RegistryHandler.setup(MODID);
