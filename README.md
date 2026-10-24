@@ -1,10 +1,6 @@
 # Dynamic Trees for Malum (`better_malum_dynamic_trees`)
 
-## Scope and authority
-
-This repository owns its mod-specific behavior and authoring inputs. Read [local instructions](AGENTS.md)
-and the [shared documentation/policy index](../../better-content-modpack/docs/README.md).
-
+## Scope
 
 Forge 1.20.1 addon that provides Dynamic Trees integration for Malum Runewood trees.
 
