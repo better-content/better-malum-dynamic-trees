@@ -22,7 +22,16 @@ def prepareProperties = { File properties ->
     if (properties.exists() && !properties.isFile()) throw new GradleException('Native properties is not a regular file')
     if (!properties.exists()) {
         properties.parentFile.mkdirs()
-        properties.text = '# Fresh nonshipping native fixture: all settings retain Minecraft defaults.\n'
+        // The authored tests inspect registered resources and invoke cancellers,
+        // not natural terrain placement. Isolate them from incidental shoreline
+        // tree generation (which can select seagrass as unsupported root soil).
+        def flat = [layers: [[block: 'minecraft:bedrock', height: 1],
+                             [block: 'minecraft:dirt', height: 2],
+                             [block: 'minecraft:grass_block', height: 1]],
+                    biome: 'minecraft:plains', lakes: false, features: false, structure_overrides: []]
+        properties.text = '# Fresh nonshipping resource/canceller fixture; no incidental world generation.\n' +
+            'level-type=minecraft:flat\ngenerate-structures=false\nlevel-seed=0\n' +
+            'generator-settings=' + groovy.json.JsonOutput.toJson(flat) + '\n'
     }
 }
 def verifyDiagnostics = { String text ->
@@ -31,7 +40,8 @@ def verifyDiagnostics = { String text ->
         boolean failedBlockEntity = blockEntity.find() && (
             blockEntity.group(2).startsWith('Tried to load a block entity for block ') && blockEntity.group(2).contains(' but failed at location ') ||
             blockEntity.group(2).startsWith('Tried to load a DUMMY block entity @ ') && blockEntity.group(2).contains(' but found not block entity block '))
-        failedBlockEntity || ['/ERROR]', '/FATAL]', '[ERROR]', '[FATAL]', 'Mixin apply failed', 'Could not decode GlobalLootModifier'].any { line.contains(it) }
+        failedBlockEntity || ['/ERROR]', '/FATAL]', '[ERROR]', '[FATAL]', 'Mixin apply failed', 'Could not decode GlobalLootModifier',
+                              'Rooty Dirt block NOT FOUND for soil '].any { line.contains(it) }
     }
     if (failures) throw new GradleException('Unexpected native failed-operation diagnostics: ' + failures.take(8))
 }
@@ -59,8 +69,18 @@ tasks.register('verifyNativeGameTestFixtureGuard') {
         actualDirectory()
         def properties = layout.buildDirectory.file('native-fixture-guard/' + UUID.randomUUID() + '/server.properties').get().asFile
         prepareProperties(properties)
-        if (!properties.isFile() || !properties.readLines().every { !it || it.startsWith('#') })
-            throw new GradleException('Absent native settings did not retain native defaults')
+        def settings = new Properties()
+        properties.withReader('UTF-8') { settings.load(it) }
+        if (settings.keySet() != ['level-type', 'generate-structures', 'level-seed', 'generator-settings'].toSet() ||
+            settings.getProperty('level-type') != 'minecraft:flat' ||
+            settings.getProperty('generate-structures') != 'false' || settings.getProperty('level-seed') != '0')
+            throw new GradleException('Fresh native settings did not isolate the resource/canceller fixture')
+        def flat = new groovy.json.JsonSlurper().parseText(settings.getProperty('generator-settings'))
+        if (flat != [layers: [[block: 'minecraft:bedrock', height: 1],
+                             [block: 'minecraft:dirt', height: 2],
+                             [block: 'minecraft:grass_block', height: 1]],
+                     biome: 'minecraft:plains', lakes: false, features: false, structure_overrides: []])
+            throw new GradleException('Fresh flat fixture settings drifted')
         def preserved = 'max-tick-time=123456\nlevel-name=retained-config\n'
         properties.text = preserved
         prepareProperties(properties)
@@ -69,12 +89,13 @@ tasks.register('verifyNativeGameTestFixtureGuard') {
         ['[00:00:00] [main/ERROR] synthetic guard input', '[00:00:00] [main/FATAL] synthetic guard input',
          '[00:00:00] [Server thread/WARN] [minecraft/LevelChunk]: Tried to load a block entity for block minecraft:chest but failed at location BlockPos{x=0,y=0,z=0}',
          '[00:00:00] [Server thread/WARN] [net.minecraft.world.level.chunk.LevelChunk/]: Tried to load a DUMMY block entity @ BlockPos{x=0,y=0,z=0} but found not block entity block Block{minecraft:stone}',
-         '[00:00:00] [main/WARN] [net.minecraftforge.common.loot.LootModifierManager/]: Could not decode GlobalLootModifier with json id thirst:add_loot_shipwreck_supply - error: unknown codec'].each { invalid ->
+         '[00:00:00] [main/WARN] [net.minecraftforge.common.loot.LootModifierManager/]: Could not decode GlobalLootModifier with json id thirst:add_loot_shipwreck_supply - error: unknown codec',
+         '[00:00:00] [Worker-Main-23/WARN] [com.ferreusveritas.dynamictrees.tree.species.Species/]: Rooty Dirt block NOT FOUND for soil minecraft:seagrass'].each { invalid ->
             boolean rejected = false
             try { verifyDiagnostics(invalid) } catch (GradleException expected) { rejected = true }
             if (!rejected) throw new GradleException('Pure diagnostic guard failed to reject ERROR/FATAL text')
         }
-        logger.lifecycle('Native fixture pure guard: actual RunConfig + absent/default + preserve-existing + strict ERROR/FATAL negatives PASS')
+        logger.lifecycle('Native fixture pure guard: actual RunConfig + deterministic flat settings + preserve-existing + strict failed-operation negatives PASS')
     }
 }
 tasks.matching { it.name == 'verifyFast' }.configureEach { dependsOn('verifyNativeGameTestFixtureGuard') }
